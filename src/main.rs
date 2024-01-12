@@ -1,6 +1,7 @@
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_rapier3d::prelude::*;
 use bevy_third_person_camera::*;
 
 mod camera;
@@ -24,6 +25,8 @@ fn main() {
                 }),
                 ..default()
             }),
+            RapierPhysicsPlugin::<NoUserData>::default(),
+            //RapierDebugRenderPlugin::default(),
             LogDiagnosticsPlugin::default(),
             FrameTimeDiagnosticsPlugin,
             PlayerPlugin,

@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_rapier3d::prelude::*;
 
 pub struct WorldPlugin;
 
@@ -37,6 +38,8 @@ fn setup_world(
             material: materials.add(Color::DARK_GREEN.into()),
             ..default()
         },
+        RigidBody::Fixed,
+        Collider::cuboid(10., 0.001, 10.),
         Name::new("Floor"),
     );
 
@@ -49,18 +52,23 @@ fn spawn_objects(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let mut create_cube =
-        |size: f32, color: Color, xyz: (f32, f32, f32), name: String| -> (PbrBundle, Name) {
-            (
-                PbrBundle {
-                    mesh: meshes.add(Mesh::from(shape::Cube::new(size))),
-                    material: materials.add(color.into()),
-                    transform: Transform::from_xyz(xyz.0, xyz.1, xyz.2),
-                    ..default()
-                },
-                Name::new(name),
-            )
-        };
+    let mut create_cube = |size: f32,
+                           color: Color,
+                           xyz: (f32, f32, f32),
+                           name: String|
+     -> (PbrBundle, RigidBody, Collider, Name) {
+        (
+            PbrBundle {
+                mesh: meshes.add(Mesh::from(shape::Cube::new(size))),
+                material: materials.add(color.into()),
+                transform: Transform::from_xyz(xyz.0, xyz.1, xyz.2),
+                ..default()
+            },
+            RigidBody::Fixed,
+            Collider::cuboid(size / 2., size / 2., size / 2.),
+            Name::new(name),
+        )
+    };
 
     commands.spawn(create_cube(
         4.0,

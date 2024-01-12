@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::prelude::*;
+use bevy_rapier3d::prelude::*;
 use bevy_third_person_camera::*;
 
 pub struct PlayerPlugin;
@@ -40,10 +41,13 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
     let player = (
         SceneBundle {
             scene: assets.load("Player.gltf#Scene0"),
-            transform: Transform::from_xyz(0.0, 0.5, 0.0),
+            transform: Transform::from_xyz(0.0, 2.0, 0.0),
             ..default()
         },
         Speed { value: 3.0 },
+        RigidBody::KinematicPositionBased,
+        Collider::capsule_y(0.25, 0.25),
+        KinematicCharacterController::default(),
         Player,
         ThirdPersonCameraTarget,
         Name::new("Player"),
@@ -57,10 +61,10 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
 fn player_movement(
     keys: Res<Input<KeyCode>>,
     time: Res<Time>,
-    mut player_q: Query<(&mut Transform, &Speed), With<Player>>,
+    mut player_q: Query<(&mut Transform, &mut KinematicCharacterController, &Speed), With<Player>>,
     cam_q: Query<&Transform, (With<Camera3d>, Without<Player>)>,
 ) {
-    for (mut player_transform, player_speed) in player_q.iter_mut() {
+    for (mut player_transform, mut player_controller, player_speed) in player_q.iter_mut() {
         let cam = match cam_q.get_single() {
             Ok(c) => c,
             Err(e) => Err(format!("Error retrieving camera: {}", e)).unwrap(),
@@ -88,11 +92,13 @@ fn player_movement(
             direction += cam.right();
         }
 
-        // Prevent movement in the y direction
-        direction.y = 0.0;
-        let movement = direction.normalize_or_zero() * player_speed.value * time.delta_seconds();
-        player_transform.translation += movement;
+        // Add gravity
+        direction.y = -0.5;
 
+        let movement = direction.normalize_or_zero() * player_speed.value * time.delta_seconds();
+        player_controller.translation = Some(movement);
+
+        direction.y = 0.0;
         // rotate player to face direction he is currently moving
         if direction.length_squared() > 0.0 {
             player_transform.look_to(direction, Vec3::Y);
