@@ -19,6 +19,7 @@ fn main() {
                 primary_window: Some(Window {
                     title: "Critical Hit".into(),
                     resolution: (1280., 720.).into(),
+                    position: WindowPosition::Centered(MonitorSelection::Primary),
                     ..default()
                 }),
                 ..default()
