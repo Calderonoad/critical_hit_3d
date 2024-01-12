@@ -1,11 +1,13 @@
 use bevy::prelude::*;
+use bevy_inspector_egui::prelude::*;
 use bevy_third_person_camera::*;
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_player)
+        app.register_type::<Speed>()
+            .add_systems(Startup, spawn_player)
             .add_systems(Update, player_movement);
     }
 }
@@ -13,7 +15,7 @@ impl Plugin for PlayerPlugin {
 #[derive(Component)]
 struct Player;
 
-#[derive(Component)]
+#[derive(Component, Reflect, Default, InspectorOptions)]
 struct Speed {
     value: f32,
 }
@@ -34,8 +36,6 @@ fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
         },
         Name::new("Flashlight"),
     );
-
-    // 255, 246, 95, 255
 
     let player = (
         SceneBundle {
